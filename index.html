@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>brag</title>
+<script type="text/javascript">
+window.getCookie = function(name) {
+      var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+      if (match) return match[2];
+}
+
+function setCookie(cName, cValue, expDays) {
+    let date = new Date();
+    date.setTime(date.getTime() + (expDays * 24 * 60 * 60 * 1000));
+    const expires = "expires=" + date.toUTCString();
+    document.cookie = cName + "=" + cValue + "; " + expires + "; path=/";
+}
+window.onload = function () {
+    var conn;
+    var msg = document.getElementById("msg");
+    var log = document.getElementById("log");
+    const urlParams = new URLSearchParams(window.location.search);
+    var room = urlParams.get('room');
+    if ( room == null ) room = 'public';
+    msg.focus();
+
+    var lang = 'zh-CN';
+    var  name = getCookie('name');
+    if ( name != undefined ) {
+        document.getElementById("name").value = name;
+    } else {
+        const Water_Margin_Names = {
+                            random :['宋江', '卢俊义', '吴用', '公孙胜', '关胜', '林冲', '秦明', '呼延灼', '花荣', '柴进',
+                                    '李应', '朱仝', '鲁智深', '武松', '董平', '张清', '杨志', '徐宁', '索超', '戴宗',
+                                    '刘唐', '李逵', '史进', '穆弘', '雷横', '李俊', '阮小二', '张横', '阮小五', '张顺',
+                                    '阮小七', '杨雄', '石秀', '解珍', '解宝', '燕青', '朱武', '黄信', '孙立', '宣赞',
+                                    '郝思文', '韩滔', '彭玘', '单廷珪', '魏定国', '萧让', '裴宣', '欧鹏', '邓飞', '燕顺',
+                                    '杨林', '凌振', '蒋敬', '吕方', '郭盛', '安道全', '皇甫端', '王英', '扈三娘', '鲍旭',
+                                    '樊瑞', '孔明', '孔亮', '项充', '李衮', '金大坚', '马麟', '童威', '童猛', '孟康',
+                                    '侯健', '陈达', '杨春', '郑天寿', '陶宗旺', '宋清', '乐和', '龚旺', '丁得孙', '穆春',
+                                    '曹正', '宋万', '杜迁', '薛永', '施恩', '李忠', '周通', '汤隆', '杜兴', '邹渊',
+                                    '邹润', '朱贵', '朱富', '蔡福', '蔡庆', '李立', '李云', '焦挺', '石勇', '孙新',
+                                    '顾大嫂', '张青', '孙二娘', '王定六', '郁保四', '白胜', '时迁', '段景住']
+                                     [(Math.round(Math.random()*10000) % 108) - 1]
+                                }
+        let name = Water_Margin_Names.random;
+        document.getElementById("name").value = name;
+        setCookie('name', name, 30)
+    }
+
+    function appendLog(item) {
+        var doScroll = log.scrollTop > log.scrollHeight - log.clientHeight - 1;
+        log.appendChild(item);
+        if (doScroll) {
+            log.scrollTop = log.scrollHeight - log.clientHeight;
+        }
+    }
+
+    document.getElementById("form").onsubmit = function () {
+
+        name = document.getElementById("name").value;
+
+        if (!conn) {
+            return false;
+        }
+        if (!msg.value) {
+            return false;
+        }
+        if (!name) {
+            return false;
+        }
+        let post = {};
+        post['name'] = name;
+        post['content'] = msg.value;
+        post['room'] = room;
+        conn.send(JSON.stringify(post));
+        msg.value = "";
+        msg.focus();
+        return false;
+    };
+
+    if (window["WebSocket"]) {
+        let href = location.hostname+(location.port ? ':'+location.port: '');
+        conn = new WebSocket("wss://"+href+"/ws?room="+room);
+        conn.onclose = function (evt) {
+            var item = document.createElement("div");
+            item.innerHTML = "<b>Connection closed.</b>";
+            appendLog(item);
+        };
+        conn.onmessage = function (evt) {
+            var messages = evt.data.split('\n');
+            for (var i = 0; i < messages.length; i++) {
+                var item = document.createElement("div");
+                item.innerText = messages[i];
+                appendLog(item);
+            }
+        };
+    } else {
+        var item = document.createElement("div");
+        item.innerHTML = "<b>Your browser does not support WebSockets.</b>";
+        appendLog(item);
+    }
+};
+</script>
+<style type="text/css">
+@media only screen and (max-width: 600px) {
+    html{
+        width:100%;
+        height:100%;
+        padding:0;
+        margin:0;
+        font-size:16px;
+    }
+}
+@media only screen and (min-width: 600px) {
+    html{
+        width:100%;
+        height:100%;
+        padding:0;
+        margin:0;
+        font-size:24px;
+    }
+}
+@media only screen and (min-width: 768px) {}
+@media only screen and (min-width: 992px) {}
+@media only screen and (min-width: 1200px){}
+body{
+    width:100%;
+    height:100%;
+    margin:0;
+    padding:0;
+}
+
+#log{
+    width:98%;
+    height:90%;
+    margin:auto;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-start;
+    border:1px solid gray;
+    overflow:auto;
+}
+
+#log div{
+    margin-left:.5rem;
+}
+
+#chat{
+    width:98%;
+    margin:5px auto;
+}
+
+#form {display:flex;flex-direction:row;align-items:center;}
+#form #name{width:80px;}
+#form #msg{width:400px;}
+#form #say{margin-left:5px;}
+#form input {height:35px;font-size:1rem;margin-right:0px;}
+
+</style>
+</head>
+<body>
+
+<div id="log"></div>
+
+<div id=chat>
+    <form id="form">
+        <input type="text" name=name id="name" placeholder='昵称' value="" />
+        <input type="text" id="msg" autofocus />
+        <input type="submit" id=say value="说" />
+    </form>
+</div>
+
+</body>
+</html>
