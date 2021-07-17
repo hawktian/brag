@@ -126,15 +126,15 @@ window.onload = function () {
 @media only screen and (min-width: 992px) {}
 @media only screen and (min-width: 1200px){}
 body{
-    width:100%;
+    width:98%;
     height:100%;
-    margin:0;
+    margin:auto;
     padding:0;
 }
 
 #log{
-    width:98%;
-    height:90%;
+    width:100%;
+    height:80%;
     margin:auto;
     display:flex;
     flex-direction:column;
@@ -148,7 +148,7 @@ body{
 }
 
 #chat{
-    width:98%;
+    width:100%;
     margin:5px auto;
 }
 
@@ -158,9 +158,16 @@ body{
 #form #say{margin-left:5px;}
 #form input {height:35px;font-size:1rem;margin-right:0px;}
 
+#header{margin:.5em 0;}
+#header .logo{font-size:2rem;}
+
 </style>
 </head>
 <body>
+
+<div id=header>
+    <span class=logo>Brag</span><span class=slogan> [Free Live Chat]</span>
+</div>
 
 <div id="log"></div>
 

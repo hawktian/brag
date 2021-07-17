@@ -13,6 +13,7 @@ func main() {
 	logInit()
 	hub := newHub()
 	go hub.run()
+
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(hub, w, r)
 	})

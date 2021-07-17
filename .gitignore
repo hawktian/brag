@@ -12,3 +12,5 @@ _cgo_export.*
 _testmain.go
 go.mod
 go.sum
+
+conf.yaml

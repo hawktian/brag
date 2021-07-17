@@ -3,11 +3,13 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/streadway/amqp"
 )
 
 const (
@@ -30,7 +32,7 @@ var (
 	space   = []byte{' '}
 )
 
-type Message struct {
+type Talk struct {
 	Name    string
 	Content string
 	Room    string
@@ -64,6 +66,12 @@ type Client struct {
 // ensures that there is at most one reader on a connection by executing all
 // reads from this goroutine.
 
+func failOnError(err error, msg string) {
+	if err != nil {
+		log.Fatalf("%s: %s", msg, err)
+	}
+}
+
 func (c *Client) readPump() {
 	defer func() {
 		c.hub.unregister <- c
@@ -73,32 +81,72 @@ func (c *Client) readPump() {
 	c.conn.SetReadDeadline(time.Now().Add(pongWait))
 	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 
+	conf, err := readConf("conf.yaml")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var dial string
+	dial = fmt.Sprintf("amqp://%s:%s@%s:%d", conf.RabbitMQ.Username,
+		conf.RabbitMQ.Password,
+		conf.RabbitMQ.Host,
+		conf.RabbitMQ.Port,
+	)
+	conn, err := amqp.Dial(dial)
+	failOnError(err, "Failed to connect to RabbitMQ")
+	defer conn.Close()
+
+	ch, err := conn.Channel()
+	failOnError(err, "Failed to open a channel")
+	defer ch.Close()
+
 	for {
 		_, message, err := c.conn.ReadMessage()
-		message = fillTime(message)
-
-		var msg bytes.Buffer
-		msg.Write(message)
-		log.Print(msg.String())
-
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("error: %v", err)
 			}
 			break
 		}
+
+		var talk Talk
+		json.Unmarshal(message, &talk)
+		//get message room name
+		room := talk.Room
+
+		//add time to message
+		loc, _ := time.LoadLocation("Asia/Shanghai")
+		talk.Time = time.Now().In(loc).Format("15:4:05")
+
+		message, _ = json.Marshal(talk)
+
+		var msg bytes.Buffer
+		msg.Write(message)
+		log.Print(msg.String())
+
+		q, err := ch.QueueDeclare(
+			room,  // name
+			false, // durable
+			false, // delete when unused
+			false, // exclusive
+			false, // no-wait
+			nil,   // arguments
+		)
+		failOnError(err, "Failed to declare a queue")
+
+		err = ch.Publish(
+			"",     // exchange
+			q.Name, // routing key
+			false,  // mandatory
+			false,  // immediate
+			amqp.Publishing{
+				ContentType: "text/plain",
+				Body:        msg.Bytes(),
+			})
+		failOnError(err, "Failed to publish a message")
+
 		c.hub.broadcast <- bytes.TrimSpace(bytes.Replace(msg.Bytes(), newline, space, -1))
 	}
-}
-
-func fillTime(message []byte) []byte {
-	var msg Message
-	loc, _ := time.LoadLocation("Asia/Shanghai")
-	now := time.Now().In(loc).Format("15:4:05")
-	json.Unmarshal(message, &msg)
-	msg.Time = now
-	message, _ = json.Marshal(msg)
-	return message
 }
 
 // writePump pumps messages from the hub to the websocket connection.
@@ -117,7 +165,7 @@ func (c *Client) writePump() {
 
 		case message, ok := <-c.send:
 
-			var msg Message
+			var msg Talk
 			json.Unmarshal(message, &msg)
 			//message sync only between same room
 			if msg.Room != c.room {
