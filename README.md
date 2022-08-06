@@ -1,7 +1,7 @@
-## Intro
+# Intro
 web based snap chat room.
 
-## deploy
+# deploy
 
 git clone https://github.com/Tonvin/brag.git
 
@@ -13,7 +13,7 @@ go mod tidy
 
 go run *.go
 
-## Usage
+# Usage
 
 open browser visit ip:8080
 
@@ -23,6 +23,6 @@ tail -f /tmp/brag.log
 # Demo
 
 https://brag.pub
-j
+
 # Nginx Proxy Setting
 see file nginx

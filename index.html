@@ -2,65 +2,20 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
 <title>谝聊</title>
 <script type="text/javascript">
-window.getCookie = function(name) {
-      var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-      if (match) return match[2];
-}
-
-function setCookie(cName, cValue, expDays) {
-    let date = new Date();
-    date.setTime(date.getTime() + (expDays * 24 * 60 * 60 * 1000));
-    const expires = "expires=" + date.toUTCString();
-    document.cookie = cName + "=" + cValue + "; " + expires + "; path=/";
-}
-
-function setRoom() {
-    let room = prompt("请输入房间名称");
-    if ( room ) {
-        window.location += '?room=' + room;
-    }
-}
 
 window.onload = function () {
     var conn;
     var msg = document.getElementById("msg");
     var log = document.getElementById("log");
-    const urlParams = new URLSearchParams(window.location.search);
-    var room = urlParams.get('room');
-    if ( room == null ) {
-        //room = 'public';
-        setRoom();
-        return;
-    }
+	var room = 'public';
 
     msg.focus();
-
-    var lang = 'zh-CN';
-    var  name = getCookie('name');
-    if ( name != undefined ) {
-        document.getElementById("name").value = name;
-    } else {
-        const Water_Margin_Names = {
-                            random :['宋江', '卢俊义', '吴用', '公孙胜', '关胜', '林冲', '秦明', '呼延灼', '花荣', '柴进',
-                                    '李应', '朱仝', '鲁智深', '武松', '董平', '张清', '杨志', '徐宁', '索超', '戴宗',
-                                    '刘唐', '李逵', '史进', '穆弘', '雷横', '李俊', '阮小二', '张横', '阮小五', '张顺',
-                                    '阮小七', '杨雄', '石秀', '解珍', '解宝', '燕青', '朱武', '黄信', '孙立', '宣赞',
-                                    '郝思文', '韩滔', '彭玘', '单廷珪', '魏定国', '萧让', '裴宣', '欧鹏', '邓飞', '燕顺',
-                                    '杨林', '凌振', '蒋敬', '吕方', '郭盛', '安道全', '皇甫端', '王英', '扈三娘', '鲍旭',
-                                    '樊瑞', '孔明', '孔亮', '项充', '李衮', '金大坚', '马麟', '童威', '童猛', '孟康',
-                                    '侯健', '陈达', '杨春', '郑天寿', '陶宗旺', '宋清', '乐和', '龚旺', '丁得孙', '穆春',
-                                    '曹正', '宋万', '杜迁', '薛永', '施恩', '李忠', '周通', '汤隆', '杜兴', '邹渊',
-                                    '邹润', '朱贵', '朱富', '蔡福', '蔡庆', '李立', '李云', '焦挺', '石勇', '孙新',
-                                    '顾大嫂', '张青', '孙二娘', '王定六', '郁保四', '白胜', '时迁', '段景住']
-                                     [(Math.round(Math.random()*10000) % 108) - 1]
-                                }
-        let name = Water_Margin_Names.random;
-        document.getElementById("name").value = name;
-        setCookie('name', name, 30)
-    }
 
     function appendLog(item) {
         var doScroll = log.scrollTop > log.scrollHeight - log.clientHeight - 1;
@@ -168,29 +123,113 @@ body{
 #form {display:flex;flex-direction:row;align-items:center;}
 #form #name{width:80px;}
 #form #msg{width:400px;}
-#form #say{margin-left:5px;}
+#form #say{margin-left:5px;border:1px solid gray;}
 #form input {height:35px;font-size:1rem;margin-right:0px;}
 
-#header{margin:.5em 0;}
+#header{margin:.5em 0;text-align:center;}
 #header .logo{font-size:1rem;}
+
+#profile{
+	position: absolute;
+	top:0;
+	left:0;
+	width:100%;
+	display:flex;
+	justify-content: space-between;
+	align-content: space-around;
+
+}
 
 </style>
 </head>
 <body>
 
+
 <div id=header>
-    <span class=logo>谝聊</span><span class=slogan></span>
+    <span class=logo>谝&nbsp;聊</span>
 </div>
 
 <div id="log"></div>
 
-<div id=chat>
+<div id=say v-show="need_profile">
     <form id="form">
-        <input type="text" name=name id="name" placeholder='昵称' value="" />
         <input type="text" id="msg" autofocus />
         <input type="submit" id=say value="说" />
     </form>
 </div>
 
+<div id="profile" v-show="need_profile">
+  <v-app id="inspire">
+    <v-form v-model="valid">
+      <v-container>
+        <v-row>
+          <v-col
+            cols="12"
+            md="20"
+          >
+            <v-text-field
+              v-model="firstname"
+              :rules="roomRules"
+              :counter="10"
+              label="聊天房名称"
+              required
+            ></v-text-field>
+          </v-col>
+        </v-row>
+
+        <v-row>
+          <v-col
+            cols="12"
+            md="20"
+          >
+            <v-text-field
+              v-model="lastname"
+              :rules="nameRules"
+              :counter="10"
+              label="昵称"
+              required
+            ></v-text-field>
+          </v-col>
+  
+        </v-row>
+      </v-container>
+    </v-form>
+  </v-app>
+	<v-overlay :value="overlay" :opacity="opacity" :absolute="absolute" :z-index="zIndex"></v-overlay>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+<script>
+new Vue({
+  el: '#profile',
+  vuetify: new Vuetify(),
+  data: () => ({
+    valid: false,
+    need_profile: false,
+    firstname: '',
+    lastname: '',
+    nameRules: [
+      v => !!v || '昵称不能为空',
+      v => v.length <= 10 || '昵称长度最多为15个字符，不能包含空格',
+    ],
+    roomRules: [
+      v => !!v || '房间名称不能为空',
+      v => v.length <= 10 || '房间名称限制为10个字符，不能包含空格。',
+    ],
+	overlay: false,
+	opacity: 0.8,
+	zIndex: -1,
+  }),
+	mounted() {
+		let uri = window.location.search.substring(1); 
+		let params = new URLSearchParams(uri);
+		if ( ! params.get("room") ) {
+			this.need_profile = true;
+			this.overlay = true;
+		}
+	},
+})
+</script>
 </body>
 </html>
