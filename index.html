@@ -2,21 +2,26 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
 <title>谝聊</title>
 <script type="text/javascript">
 
 window.onload = function () {
+
+    let uri = window.location.search.substring(1); 
+    let params = new URLSearchParams(uri);
+    let room =params.get("room")
+    if ( ! room ) {
+        window.location = '/checkin.html'
+    }
+    let nickname =  params.get("nickname")
+    if ( ! nickname ) {
+        window.location = '/checkin.html'
+    }
+
     var conn;
     var msg = document.getElementById("msg");
     var log = document.getElementById("log");
-	var room = 'public';
-
-    msg.focus();
-
     function appendLog(item) {
         var doScroll = log.scrollTop > log.scrollHeight - log.clientHeight - 1;
         log.appendChild(item);
@@ -24,10 +29,7 @@ window.onload = function () {
             log.scrollTop = log.scrollHeight - log.clientHeight;
         }
     }
-
     document.getElementById("form").onsubmit = function () {
-
-        name = document.getElementById("name").value;
 
         if (!conn) {
             return false;
@@ -35,11 +37,11 @@ window.onload = function () {
         if (!msg.value) {
             return false;
         }
-        if (!name) {
+        if (!nickname) {
             return false;
         }
         let post = {};
-        post['name'] = name;
+        post['name'] = nickname;
         post['content'] = msg.value;
         post['room'] = room;
         conn.send(JSON.stringify(post));
@@ -72,36 +74,19 @@ window.onload = function () {
 };
 </script>
 <style type="text/css">
-@media only screen and (max-width: 600px) {
-    html{
-        width:100%;
-        height:100%;
-        padding:0;
-        margin:0;
-        font-size:16px;
-    }
-}
-@media only screen and (min-width: 600px) {
-    html{
-        width:100%;
-        height:100%;
-        padding:0;
-        margin:0;
-        font-size:24px;
-    }
-}
-@media only screen and (min-width: 768px) {}
-@media only screen and (min-width: 992px) {}
-@media only screen and (min-width: 1200px){}
-body{
-    width:98%;
+
+
+html{
+    width:100%;
     height:100%;
-    margin:auto;
     padding:0;
+    margin:0;
+    font-size:16px;
 }
 
+
+
 #log{
-    width:100%;
     height:80%;
     margin:auto;
     display:flex;
@@ -115,30 +100,26 @@ body{
     margin-left:.5rem;
 }
 
-#chat{
-    width:100%;
-    margin:5px auto;
-}
-
-#form {display:flex;flex-direction:row;align-items:center;}
-#form #name{width:80px;}
-#form #msg{width:400px;}
-#form #say{margin-left:5px;border:1px solid gray;}
-#form input {height:35px;font-size:1rem;margin-right:0px;}
-
 #header{margin:.5em 0;text-align:center;}
 #header .logo{font-size:1rem;}
 
-#profile{
-	position: absolute;
-	top:0;
-	left:0;
-	width:100%;
-	display:flex;
-	justify-content: space-between;
-	align-content: space-around;
+#say {margin:auto;}
+#form {display:flex;flex-direction:row;align-items:center;}
 
+@media screen and (min-width: 390px) {
+    body{ width:95%; height:100%; margin:auto; padding:0; }
+    #form #msg {width:85%;}
 }
+
+@media screen and (min-width: 800px) {
+    body{ width:900px; height:100%; margin:auto; padding:0; }
+    #form #msg {width:95%;}
+}
+
+#form input {height:35px;font-size:1rem;margin-right:0px;}
+
+#op { margin-top:10px; }
+
 
 </style>
 </head>
@@ -150,86 +131,16 @@ body{
 </div>
 
 <div id="log"></div>
-
-<div id=say v-show="need_profile">
+<div id="">&nbsp;</div>
+<div id="say">
     <form id="form">
-        <input type="text" id="msg" autofocus />
-        <input type="submit" id=say value="说" />
+        <input type="text" id="msg" />
+        &nbsp;&nbsp;
+        <input type="submit" value="发送" />
     </form>
 </div>
-
-<div id="profile" v-show="need_profile">
-  <v-app id="inspire">
-    <v-form v-model="valid">
-      <v-container>
-        <v-row>
-          <v-col
-            cols="12"
-            md="20"
-          >
-            <v-text-field
-              v-model="firstname"
-              :rules="roomRules"
-              :counter="10"
-              label="聊天房名称"
-              required
-            ></v-text-field>
-          </v-col>
-        </v-row>
-
-        <v-row>
-          <v-col
-            cols="12"
-            md="20"
-          >
-            <v-text-field
-              v-model="lastname"
-              :rules="nameRules"
-              :counter="10"
-              label="昵称"
-              required
-            ></v-text-field>
-          </v-col>
-  
-        </v-row>
-      </v-container>
-    </v-form>
-  </v-app>
-	<v-overlay :value="overlay" :opacity="opacity" :absolute="absolute" :z-index="zIndex"></v-overlay>
+<div id=op>
+    <button>清屏</button>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
-<script>
-new Vue({
-  el: '#profile',
-  vuetify: new Vuetify(),
-  data: () => ({
-    valid: false,
-    need_profile: false,
-    firstname: '',
-    lastname: '',
-    nameRules: [
-      v => !!v || '昵称不能为空',
-      v => v.length <= 10 || '昵称长度最多为15个字符，不能包含空格',
-    ],
-    roomRules: [
-      v => !!v || '房间名称不能为空',
-      v => v.length <= 10 || '房间名称限制为10个字符，不能包含空格。',
-    ],
-	overlay: false,
-	opacity: 0.8,
-	zIndex: -1,
-  }),
-	mounted() {
-		let uri = window.location.search.substring(1); 
-		let params = new URLSearchParams(uri);
-		if ( ! params.get("room") ) {
-			this.need_profile = true;
-			this.overlay = true;
-		}
-	},
-})
-</script>
 </body>
 </html>
