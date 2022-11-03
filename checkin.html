@@ -8,27 +8,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
 <title>谝聊</title>
 <style type="text/css">
-@media only screen and (max-width: 600px) {
-    html{
-        width:100%;
-        height:100%;
-        padding:0;
-        margin:0;
-        font-size:16px;
-    }
-}
-@media only screen and (min-width: 600px) {
-    html{
-        width:100%;
-        height:100%;
-        padding:0;
-        margin:0;
-        font-size:24px;
-    }
-}
-@media only screen and (min-width: 768px) {}
-@media only screen and (min-width: 992px) {}
-@media only screen and (min-width: 1200px){}
 body{
     width:98%;
     margin:auto;
@@ -50,10 +29,6 @@ body{
 #profile{
     width:390px;
     height:300px;
-}
-
-.v-application--wrap{
-    min-height:auto;
 }
 
 </style>
@@ -121,7 +96,7 @@ new Vue({
   data: () => ({
     valid: false,
     need_profile: true,
-    room: '',
+    room: (new URLSearchParams(window.location.search)).get("room") ?? '',
     nickname: '',
     nameRules: [
       v => !!v || '昵称不能为空',
