@@ -3,20 +3,26 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 <title>谝聊</title>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 <script type="text/javascript">
+
+let room = null;
 
 window.onload = function () {
 
     let uri = window.location.search.substring(1); 
     let params = new URLSearchParams(uri);
-    let room =params.get("room")
-    if ( ! room ) {
+    room = params.get("room")
+    if ( null == room ) {
         window.location = '/checkin.html'
+		return
     }
     let nickname =  params.get("nickname")
     if ( ! nickname ) {
-        window.location = '/checkin.html'
+        window.location = '/checkin.html?room='+room
+		return
     }
 
     var conn;
@@ -101,7 +107,7 @@ html{
 }
 
 #header{margin:.5em 0;text-align:center;}
-#header .logo{font-size:1rem;}
+#header .logo{font-size:1rem;color:#090979;}
 
 #say {margin:auto;}
 #form {display:flex;flex-direction:row;align-items:center;}
@@ -127,7 +133,7 @@ html{
 
 
 <div id=header>
-    <span class=logo>谝&nbsp;聊</span>
+    <span class=logo><h1>谝&nbsp;聊</h1></span>
 </div>
 
 <div id="log"></div>
@@ -141,6 +147,37 @@ html{
 </div>
 <div id=op>
     <button onclick='document.getElementById("log").innerHTML="";'>清屏</button>
+    <button onclick=share()>邀请</button>
 </div>
+<script>
+
+const copyLink = async () => {
+	try {
+		let href = location.hostname+(location.port ? ':'+location.port: '');
+		link = "https://"+href+"/index.html?room="+room;
+		await navigator.clipboard.writeText(link);
+		console.log('Content copied to clipboard');
+	} catch (err) {
+		console.error('Failed to copy: ', err);
+	}
+  }
+
+const share = () => {
+	copyLink();
+	Toastify({
+	  text: "聊天房链接已经复制！",
+	  duration: 2000,
+	  destination: "",
+	  newWindow: true,
+	  close: true,
+	  gravity: "bottom", // `top` or `bottom`
+	  position: "center", // `left`, `center` or `right`
+	  stopOnFocus: true, // Prevents dismissing of toast on hover
+	  style: {
+		background: "linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(9,9,121,1) 35%, rgba(0,212,255,1) 100%)",
+	  },
+	}).showToast();
+}
+</script>
 </body>
 </html>
