@@ -8,22 +8,34 @@
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 <script type="text/javascript">
 
+let rid  = null;
 let room = null;
 
 window.onload = function () {
 
     let uri = window.location.search.substring(1); 
     let params = new URLSearchParams(uri);
+
     room = params.get("room")
     if ( null == room ) {
         window.location = '/checkin.html'
+		return false
+    }
+
+    rid = params.get("rid")
+    if ( null == rid ) {
+        window.location = '/checkin.html'
+		return false
+    }
+
+
+    let name =  params.get("name")
+    if ( ! name ) {
+        window.location = '/checkin.html?rid='+rid+'&room='+room
 		return
     }
-    let nickname =  params.get("nickname")
-    if ( ! nickname ) {
-        window.location = '/checkin.html?room='+room
-		return
-    }
+
+    document.getElementById('room').innerHTML = '房间名称：'+room+'&nbsp;&nbsp;房间编号：'+rid+'&nbsp;&nbsp;昵称：'+name;
 
     var conn;
     var msg = document.getElementById("msg");
@@ -43,13 +55,14 @@ window.onload = function () {
         if (!msg.value) {
             return false;
         }
-        if (!nickname) {
+        if (!name) {
             return false;
         }
         let post = {};
-        post['name'] = nickname;
+        post['name'] = name;
         post['content'] = msg.value;
         post['room'] = room;
+        post['rid'] = rid;
         conn.send(JSON.stringify(post));
         msg.value = "";
         msg.focus();
@@ -58,7 +71,7 @@ window.onload = function () {
 
     if (window["WebSocket"]) {
         let href = location.hostname+(location.port ? ':'+location.port: '');
-        conn = new WebSocket("wss://"+href+"/ws?room="+room);
+        conn = new WebSocket("wss://"+href+"/ws?rid="+rid+"&room="+room);
         conn.onclose = function (evt) {
             var item = document.createElement("div");
             item.innerHTML = "<b>Connection closed.</b>";
@@ -68,7 +81,7 @@ window.onload = function () {
             var messages = evt.data.split('\n');
             for (var i = 0; i < messages.length; i++) {
                 var item = document.createElement("div");
-                item.innerText = messages[i];
+                item.innerHTML = messages[i];
                 appendLog(item);
             }
         };
@@ -93,7 +106,7 @@ html{
 
 
 #log{
-    height:80%;
+    height:75%;
     margin:auto;
     display:flex;
     flex-direction:column;
@@ -105,6 +118,17 @@ html{
 #log div{
     margin-left:.5rem;
 }
+
+#log .time{
+    color:red;
+}
+#log .name{
+    font-weight:bold;
+}
+#log .content{
+
+}
+
 
 #header{margin:.5em 0;text-align:center;}
 #header .logo{font-size:1rem;color:#090979;}
@@ -136,6 +160,7 @@ html{
     <span class=logo><h1>谝&nbsp;聊</h1></span>
 </div>
 
+<div id="room"></div>
 <div id="log"></div>
 <div id="">&nbsp;</div>
 <div id="say">
@@ -154,7 +179,7 @@ html{
 const copyLink = async () => {
 	try {
 		let href = location.hostname+(location.port ? ':'+location.port: '');
-		link = "https://"+href+"/index.html?room="+room;
+		link = "https://"+href+"/index.html?rid="+rid+"&room="+room;
 		await navigator.clipboard.writeText(link);
 		console.log('Content copied to clipboard');
 	} catch (err) {

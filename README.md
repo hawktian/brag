@@ -1,5 +1,5 @@
 # Intro
-web based snap chat room.
+web based chat room.
 
 # deploy
 

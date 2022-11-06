@@ -36,6 +36,7 @@ type Talk struct {
 	Name    string
 	Content string
 	Room    string
+	Rid     string
 	Time    string
 }
 
@@ -57,7 +58,7 @@ type Client struct {
 	// Buffered channel of outbound messages.
 	send chan []byte
 
-	room string
+	rid string
 }
 
 // readPump pumps messages from the websocket connection to the hub.
@@ -113,10 +114,13 @@ func (c *Client) readPump() {
 		json.Unmarshal(message, &talk)
 		//get message room name
 		room := talk.Room
+		//rid := talk.Rid
 
 		//add time to message
 		loc, _ := time.LoadLocation("Asia/Shanghai")
-		talk.Time = time.Now().In(loc).Format("15:4:05")
+		talk.Time = "<span class='time'>" + time.Now().In(loc).Format("2006-02-01 15:04:05") + "</span>"
+		talk.Name = "<span class='name'>" + talk.Name + "：</span>"
+		talk.Content = "<span class='content'>" + talk.Content + "</span>"
 
 		message, _ = json.Marshal(talk)
 
@@ -168,7 +172,7 @@ func (c *Client) writePump() {
 			var msg Talk
 			json.Unmarshal(message, &msg)
 			//message sync only between same room
-			if msg.Room != c.room {
+			if msg.Rid != c.rid {
 				continue
 			}
 
@@ -213,13 +217,15 @@ func (c *Client) writePump() {
 // serveWs handles websocket requests from the peer.
 func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	room := r.URL.Query().Get("room")
+	rid := r.URL.Query().Get("rid")
 	log.Printf("room: %s", room)
+	log.Printf("rid: %s", rid)
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	client := &Client{room: room, hub: hub, conn: conn, send: make(chan []byte, 256)}
+	client := &Client{rid: rid, hub: hub, conn: conn, send: make(chan []byte, 256)}
 	client.hub.register <- client
 
 	// Allow collection of memory referenced by the caller by doing all work in

@@ -64,7 +64,7 @@ body{
             md="20"
           >
             <v-text-field
-              v-model="nickname"
+              v-model="name"
               :rules="nameRules"
               :counter="10"
               label="昵称"
@@ -97,7 +97,8 @@ new Vue({
     valid: false,
     need_profile: true,
     room: (new URLSearchParams(window.location.search)).get("room") ?? '',
-    nickname: '',
+    rid: (new URLSearchParams(window.location.search)).get("rid") ?? (Math.random() + 1).toString(36).toUpperCase().substring(6),
+    name: '',
     nameRules: [
       v => !!v || '昵称不能为空',
       v => v.length <= 10 || '昵称长度最多为15个字符，不能包含空格',
@@ -112,8 +113,8 @@ new Vue({
   }),
     methods: {
         checkin(){
-            if ( this.room && this.nickname ) {
-                window.location = '/index.html?room='+this.room+'&nickname='+this.nickname;
+            if ( this.room && this.name && this.rid ) {
+                window.location = '/index.html?rid='+this.rid+'&room='+this.room+'&name='+this.name;
             }
         }
     },
