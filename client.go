@@ -118,9 +118,9 @@ func (c *Client) readPump() {
 
 		//add time to message
 		loc, _ := time.LoadLocation("Asia/Shanghai")
-		talk.Time = "<span class='time'>" + time.Now().In(loc).Format("2006-02-01 15:04:05") + "</span>"
-		talk.Name = "<span class='name'>" + talk.Name + "：</span>"
-		talk.Content = "<span class='content'>" + talk.Content + "</span>"
+		talk.Time = time.Now().In(loc).Format("2006-02-01 15:04:05")
+		talk.Name = talk.Name
+		talk.Content = talk.Content
 
 		message, _ = json.Marshal(talk)
 
@@ -176,13 +176,6 @@ func (c *Client) writePump() {
 				continue
 			}
 
-			var outputMessage bytes.Buffer
-			outputMessage.Write([]byte(msg.Time))
-			outputMessage.Write([]byte(tab))
-			outputMessage.Write([]byte(msg.Name))
-			outputMessage.Write([]byte(tab))
-			outputMessage.Write([]byte(msg.Content))
-
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
 				// The hub closed the channel.
@@ -194,7 +187,7 @@ func (c *Client) writePump() {
 			if err != nil {
 				return
 			}
-			w.Write(outputMessage.Bytes())
+			w.Write(message)
 
 			// Add queued chat messages to the current websocket message.
 			n := len(c.send)
