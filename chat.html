@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+<title>谝聊</title>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<script type="text/javascript">
+
+let rid  = null;
+let room = null;
+let title = '谝聊';
+let signal = {}
+signal.count = 0
+
+window.onload = function () {
+
+    let uri = window.location.search.substring(1); 
+    let params = new URLSearchParams(uri);
+
+    room = params.get("room")
+    if ( null == room ) {
+        window.location = '/index.html'
+		return false
+    }
+
+    rid = params.get("rid")
+    if ( null == rid ) {
+        window.location = '/index.html'
+		return false
+    }
+
+
+    let name =  params.get("name")
+    if ( ! name ) {
+        window.location = '/index.html?rid='+rid+'&room='+room
+		return
+    }
+
+    document.getElementById('room').innerHTML = '房间名称：'+room+'&nbsp;&nbsp;房间编号：'+rid+'&nbsp;&nbsp;昵称：'+name;
+
+    var conn;
+    var msg = document.getElementById("msg");
+    var log = document.getElementById("log");
+    function appendLog(item) {
+        var doScroll = log.scrollTop > log.scrollHeight - log.clientHeight - 1;
+        log.appendChild(item);
+        if (doScroll) {
+            log.scrollTop = log.scrollHeight - log.clientHeight;
+        }
+        TitleNotice()
+    }
+
+    function TitleNotice(){
+        if ( document.hidden ) {
+            signal.count++
+            document.title = title + String.fromCharCode(32) + '('+signal.count+')';
+        } else {
+            signal.count = 0;
+            document.title = title;
+        }
+    }
+
+    document.getElementById("form").onsubmit = function () {
+
+        if (!conn) {
+            return false;
+        }
+        if (!msg.value) {
+            return false;
+        }
+        if (!name) {
+            return false;
+        }
+        let post = {};
+        post['name'] = name;
+        post['content'] = msg.value;
+        post['room'] = room;
+        post['rid'] = rid;
+        conn.send(JSON.stringify(post));
+        msg.value = "";
+        msg.focus();
+        return false;
+    };
+
+    if (window["WebSocket"]) {
+        let href = location.hostname+(location.port ? ':'+location.port: '');
+        conn = new WebSocket("wss://"+href+"/ws?rid="+rid+"&room="+room);
+        conn.onclose = function (evt) {
+            var item = document.createElement("div");
+            item.innerHTML = "<b>Connection closed.</b>";
+            appendLog(item);
+        };
+        conn.onmessage = function (evt) {
+            var messages = evt.data.split('\n');
+            for (var i = 0; i < messages.length; i++) {
+                var item = document.createElement("div");
+                const msg = JSON.parse(messages[i])
+                let HTML = [];
+                HTML.push("<span class=time>"+msg.Time+"</span>");
+                HTML.push("<span class=name>"+msg.Name+"</span>");
+                HTML.push("<span class=content>"+msg.Content+"</span>");
+                item.innerHTML = HTML.join(String.fromCharCode(9));
+                appendLog(item);
+            }
+        };
+    } else {
+        var item = document.createElement("div");
+        item.innerHTML = "<b>Your browser does not support WebSockets.</b>";
+        appendLog(item);
+    }
+
+    window.onfocus = () => { document.title = title}
+};
+</script>
+<style type="text/css">
+
+
+html{
+    width:100%;
+    height:100%;
+    padding:0;
+    margin:0;
+    font-size:16px;
+}
+
+
+
+#log{
+    height:75%;
+    margin:auto;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-start;
+    border:1px solid gray;
+    overflow:auto;
+}
+
+#log div{
+    margin-left:.5rem;
+}
+
+#log .time{
+    color:gray;
+}
+#log .name{
+    font-weight:bold;
+}
+#log .content{
+
+}
+
+
+#header{margin:.5em 0;text-align:center;}
+#header .logo{font-size:1rem;color:#090979;}
+
+#say {margin:auto;}
+#form {display:flex;flex-direction:row;align-items:center;}
+
+@media screen and (min-width: 390px) {
+    body{ width:95%; height:100%; margin:auto; padding:0; }
+    #form #msg {width:85%;}
+}
+
+@media screen and (min-width: 800px) {
+    body{ width:900px; height:100%; margin:auto; padding:0; }
+    #form #msg {width:95%;}
+}
+
+#form input {height:35px;font-size:1rem;margin-right:0px;}
+
+#op { margin-top:10px; }
+
+
+</style>
+</head>
+<body>
+
+
+<div id=header>
+    <span class=logo><h1>谝&nbsp;聊</h1></span>
+</div>
+
+<div id="room"></div>
+<div id="log"></div>
+<div id="">&nbsp;</div>
+<div id="say">
+    <form id="form">
+        <input type="text" id="msg" />
+        &nbsp;&nbsp;
+        <input type="submit" value="发送" />
+    </form>
+</div>
+<div id=op>
+    <button onclick='document.getElementById("log").innerHTML="";'>清屏</button>
+    <button onclick=share()>邀请</button>
+</div>
+<script>
+
+const copyLink = async () => {
+	try {
+		let href = location.hostname+(location.port ? ':'+location.port: '');
+		link = "https://"+href+"/chat.html?rid="+rid+"&room="+room;
+		await navigator.clipboard.writeText(link);
+		console.log('Content copied to clipboard');
+	} catch (err) {
+		console.error('Failed to copy: ', err);
+	}
+  }
+
+const share = () => {
+	copyLink();
+	Toastify({
+	  text: "聊天房链接已经复制！",
+	  duration: 2000,
+	  destination: "",
+	  newWindow: true,
+	  close: true,
+	  gravity: "bottom", // `top` or `bottom`
+	  position: "center", // `left`, `center` or `right`
+	  stopOnFocus: true, // Prevents dismissing of toast on hover
+	  style: {
+		background: "linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(9,9,121,1) 35%, rgba(0,212,255,1) 100%)",
+	  },
+	}).showToast();
+}
+</script>
+</body>
+</html>

@@ -2,154 +2,34 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
+<link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
-<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 <title>谝聊</title>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-<script type="text/javascript">
-
-let rid  = null;
-let room = null;
-
-window.onload = function () {
-
-    let uri = window.location.search.substring(1); 
-    let params = new URLSearchParams(uri);
-
-    room = params.get("room")
-    if ( null == room ) {
-        window.location = '/checkin.html'
-		return false
-    }
-
-    rid = params.get("rid")
-    if ( null == rid ) {
-        window.location = '/checkin.html'
-		return false
-    }
-
-
-    let name =  params.get("name")
-    if ( ! name ) {
-        window.location = '/checkin.html?rid='+rid+'&room='+room
-		return
-    }
-
-    document.getElementById('room').innerHTML = '房间名称：'+room+'&nbsp;&nbsp;房间编号：'+rid+'&nbsp;&nbsp;昵称：'+name;
-
-    var conn;
-    var msg = document.getElementById("msg");
-    var log = document.getElementById("log");
-    function appendLog(item) {
-        var doScroll = log.scrollTop > log.scrollHeight - log.clientHeight - 1;
-        log.appendChild(item);
-        if (doScroll) {
-            log.scrollTop = log.scrollHeight - log.clientHeight;
-        }
-    }
-    document.getElementById("form").onsubmit = function () {
-
-        if (!conn) {
-            return false;
-        }
-        if (!msg.value) {
-            return false;
-        }
-        if (!name) {
-            return false;
-        }
-        let post = {};
-        post['name'] = name;
-        post['content'] = msg.value;
-        post['room'] = room;
-        post['rid'] = rid;
-        conn.send(JSON.stringify(post));
-        msg.value = "";
-        msg.focus();
-        return false;
-    };
-
-    if (window["WebSocket"]) {
-        let href = location.hostname+(location.port ? ':'+location.port: '');
-        conn = new WebSocket("wss://"+href+"/ws?rid="+rid+"&room="+room);
-        conn.onclose = function (evt) {
-            var item = document.createElement("div");
-            item.innerHTML = "<b>Connection closed.</b>";
-            appendLog(item);
-        };
-        conn.onmessage = function (evt) {
-            var messages = evt.data.split('\n');
-            for (var i = 0; i < messages.length; i++) {
-                var item = document.createElement("div");
-                item.innerHTML = messages[i];
-                appendLog(item);
-            }
-        };
-    } else {
-        var item = document.createElement("div");
-        item.innerHTML = "<b>Your browser does not support WebSockets.</b>";
-        appendLog(item);
-    }
-};
-</script>
 <style type="text/css">
-
-
-html{
-    width:100%;
-    height:100%;
-    padding:0;
-    margin:0;
-    font-size:16px;
-}
-
-
-
-#log{
-    height:75%;
+body{
+    width:98%;
     margin:auto;
-    display:flex;
-    flex-direction:column;
-    justify-content:flex-start;
-    border:1px solid gray;
-    overflow:auto;
+    padding:0;
 }
 
-#log div{
-    margin-left:.5rem;
+#brag {
+    width:390px;
+    margin:auto;
 }
 
-#log .time{
-    color:red;
-}
-#log .name{
-    font-weight:bold;
-}
-#log .content{
-
-}
-
-
-#header{margin:.5em 0;text-align:center;}
-#header .logo{font-size:1rem;color:#090979;}
-
-#say {margin:auto;}
 #form {display:flex;flex-direction:row;align-items:center;}
-
-@media screen and (min-width: 390px) {
-    body{ width:95%; height:100%; margin:auto; padding:0; }
-    #form #msg {width:85%;}
-}
-
-@media screen and (min-width: 800px) {
-    body{ width:900px; height:100%; margin:auto; padding:0; }
-    #form #msg {width:95%;}
-}
-
+#form #name{width:80px;}
 #form input {height:35px;font-size:1rem;margin-right:0px;}
 
-#op { margin-top:10px; }
+#header{margin:.5em 0;text-align:center;}
+#header .logo{font-size:1rem;}
 
+#profile{
+    width:390px;
+    height:300px;
+}
 
 </style>
 </head>
@@ -157,52 +37,91 @@ html{
 
 
 <div id=header>
-    <span class=logo><h1>谝&nbsp;聊</h1></span>
+    <span class=logo>谝&nbsp;聊</span>
 </div>
 
-<div id="room"></div>
-<div id="log"></div>
-<div id="">&nbsp;</div>
-<div id="say">
-    <form id="form">
-        <input type="text" id="msg" />
-        &nbsp;&nbsp;
-        <input type="submit" value="发送" />
-    </form>
-</div>
-<div id=op>
-    <button onclick='document.getElementById("log").innerHTML="";'>清屏</button>
-    <button onclick=share()>邀请</button>
-</div>
+  <v-app id="brag">
+    <v-form v-model="valid" id=profile >
+      <v-container>
+        <v-row>
+          <v-col
+            cols="12"
+            md="20"
+          >
+            <v-text-field
+              v-model="room"
+              :rules="roomRules"
+              :counter="10"
+              label="聊天房名称"
+              required
+            ></v-text-field>
+          </v-col>
+        </v-row>
+
+        <v-row>
+          <v-col
+            cols="12"
+            md="20"
+          >
+            <v-text-field
+              v-model="name"
+              :rules="nameRules"
+              :counter="10"
+              label="昵称"
+              required
+            ></v-text-field>
+          </v-col>
+  
+        </v-row>
+
+        <v-row>
+          <v-col cols="12" md="20" >
+                <v-btn color="primary" elevation="4" @click="checkin">确定</v-btn>
+          </v-col>
+        </v-row>
+
+
+      </v-container>
+    </v-form>
+  </v-app>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
 <script>
+new Vue({
+  el: '#brag',
+  vuetify: new Vuetify(),
+  data: () => ({
+    valid: false,
+    nameRules: [
+      v => !!v || '昵称不能为空',
+      v => v.length <= 10 || '昵称长度最多为15个字符，不能包含空格',
+    ],
+    roomRules: [
+      v => !!v || '房间名称不能为空',
+      v => v.length <= 10 || '房间名称限制为10个字符，不能包含空格。',
+    ],
+	opacity: 0.8,
+	zIndex: -1,
 
-const copyLink = async () => {
-	try {
-		let href = location.hostname+(location.port ? ':'+location.port: '');
-		link = "https://"+href+"/index.html?rid="+rid+"&room="+room;
-		await navigator.clipboard.writeText(link);
-		console.log('Content copied to clipboard');
-	} catch (err) {
-		console.error('Failed to copy: ', err);
-	}
-  }
-
-const share = () => {
-	copyLink();
-	Toastify({
-	  text: "聊天房链接已经复制！",
-	  duration: 2000,
-	  destination: "",
-	  newWindow: true,
-	  close: true,
-	  gravity: "bottom", // `top` or `bottom`
-	  position: "center", // `left`, `center` or `right`
-	  stopOnFocus: true, // Prevents dismissing of toast on hover
-	  style: {
-		background: "linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(9,9,121,1) 35%, rgba(0,212,255,1) 100%)",
-	  },
-	}).showToast();
-}
+  }),
+    methods: {
+        checkin(){
+            if ( this.room && this.name && this.rid ) {
+                window.location = '/chat.html?rid='+this.rid+'&room='+this.room+'&name='+this.name;
+            }
+        }
+    },
+    mounted() {},
+    created() {
+        let urlParams = new URLSearchParams(window.location.search);
+        this.rid = urlParams.get('rid') ?? (Math.random() + 1).toString(36).toUpperCase().substring(7);
+        this.room = urlParams.get('room');
+        this.name = urlParams.get('name');
+    },
+})
 </script>
 </body>
 </html>
