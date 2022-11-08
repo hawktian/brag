@@ -118,7 +118,7 @@ func (c *Client) readPump() {
 
 		//add time to message
 		loc, _ := time.LoadLocation("Asia/Shanghai")
-		talk.Time = time.Now().In(loc).Format("2006-02-01 15:04:05")
+		talk.Time = time.Now().In(loc).Format("15:04:05")
 		talk.Name = talk.Name
 		talk.Content = talk.Content
 
