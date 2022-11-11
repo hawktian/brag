@@ -6,6 +6,7 @@
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 <title>谝聊</title>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<script type="text/javascript" src="./auto.link.js"></script>
 <script type="text/javascript">
 
 let rid  = null;
@@ -105,7 +106,7 @@ window.onload = function () {
                 let HTML = [];
                 HTML.push("<span class=time>"+msg.Time+"</span>");
                 HTML.push("<span class=name>"+msg.Name+"：</span>");
-                HTML.push("<span class=content>"+msg.Content+"</span>");
+                HTML.push("<span class=content>"+msg.Content.autoLink()+"</span>");
                 item.innerHTML = HTML.join(String.fromCharCode(9));
                 appendLog(item);
             }
@@ -221,7 +222,7 @@ html{
     <form id="form">
         <input type="text" id="msg" />
         &nbsp;&nbsp;
-        <input type="submit" id=btn-send value="发送" />
+        <input type="submit" id="btn-send" value="发送" />
     </form>
 </div>
 <div id=op>
