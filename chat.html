@@ -7,6 +7,7 @@
 <title>谝聊</title>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 <script type="text/javascript" src="./auto.link.js"></script>
+<script type="module" src="./picmo.popup.js"></script>
 <script type="text/javascript">
 
 let rid  = null;
@@ -39,8 +40,8 @@ window.onload = function () {
 		return
     }
 
-    document.getElementById('room').innerHTML = '房间名称：'+room;
-    document.getElementById('rid').innerHTML = '房间编号：'+rid;
+    document.getElementById('rid').innerHTML = '编号：'+rid;
+    document.getElementById('room').innerHTML = '名称：'+room;
     document.getElementById('name').innerHTML = '昵称：'+name;
 
     var conn;
@@ -229,13 +230,21 @@ html{
     <button onclick='document.getElementById("log").innerHTML="";'>清屏</button>
     <button onclick=share()>邀请</button>
     <button onclick=rename()>改名</button>
+    <button id=emoji>表情</button>
 </div>
+
+<section id="selection-outer" class="empty">
+    <div id="selection">
+        <div id="selection-emoji" class="empty"></div>
+    </div>
+</section>
+
 <script>
 
     const copyLink = async () => {
         try {
             let href = location.hostname+(location.port ? ':'+location.port: '');
-            link = "https://"+href+"/index.html?rid="+rid+"&room="+room;
+            link = "https://"+href+"/index.html?rid="+rid+"&room="+encodeURIComponent(room);
             await navigator.clipboard.writeText(link);
             console.log('Content copied to clipboard');
         } catch (err) {
