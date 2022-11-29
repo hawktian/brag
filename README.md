@@ -1,7 +1,7 @@
 # Intro
-web based chat room.
+browser based anonymous chat room.
 
-# deploy
+# Deploy
 
 git clone https://github.com/Tonvin/brag.git
 
@@ -13,14 +13,12 @@ go mod tidy
 
 go run *.go
 
-# Usage
-
-open browser visit ip:8080
+ip:8080
 
 # Log
-tail -f /tmp/brag.log
+/tmp/brag.log
 
-# Demo
+# Demo Site
 
 https://brag.pub
 
