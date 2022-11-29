@@ -132,11 +132,6 @@ html{
     font-size:16px;
 }
 
-
-
-
-
-
 #header{margin:.5em 0;text-align:center;}
 #header .logo{font-size:1rem;color:#090979;}
 
@@ -241,16 +236,16 @@ html{
 
 <script>
 
-    const copyLink = async () => {
-        try {
-            let href = location.hostname+(location.port ? ':'+location.port: '');
-            link = "https://"+href+"/index.html?rid="+rid+"&room="+encodeURIComponent(room);
-            await navigator.clipboard.writeText(link);
-            console.log('Content copied to clipboard');
-        } catch (err) {
-            console.error('Failed to copy: ', err);
-        }
+const copyLink = async () => {
+    try {
+        let href = location.hostname+(location.port ? ':'+location.port: '');
+        link = "https://"+href+"/index.html?rid="+rid+"&room="+encodeURIComponent(room);
+        await navigator.clipboard.writeText(link);
+        console.log('Content copied to clipboard');
+    } catch (err) {
+        console.error('Failed to copy: ', err);
     }
+}
 
 const rename = async () => {
     let href = location.hostname+(location.port ? ':'+location.port: '');
