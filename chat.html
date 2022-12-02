@@ -6,8 +6,8 @@
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 <title>谝聊</title>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-<script type="text/javascript" src="./auto.link.js"></script>
-<script type="module" src="./picmo.popup.js"></script>
+<script type="text/javascript" src="/assets/js/auto.link.js"></script>
+<script type="module" src="/assets/js/picmo.popup.js"></script>
 <script type="text/javascript">
 
 let rid  = null;
@@ -92,11 +92,11 @@ window.onload = function () {
     };
 
     if (window["WebSocket"]) {
-        let href = location.hostname+(location.port ? ':'+location.port: '');
-        conn = new WebSocket("wss://"+href+"/ws?rid="+rid+"&room="+room);
+        WebSocketUrl = (location.origin+"/ws?rid="+rid+"&room="+room).replace('http', 'ws');
+        conn = new WebSocket(WebSocketUrl);
         conn.onclose = function (evt) {
             var item = document.createElement("div");
-            item.innerHTML = "<b>Connection closed.</b>";
+            item.innerHTML = "<b>websockets链路关闭</b>";
             appendLog(item);
         };
         conn.onmessage = function (evt) {
@@ -119,6 +119,8 @@ window.onload = function () {
     }
 
     window.onfocus = () => { document.title = title}
+
+
 };
 </script>
 <style type="text/css">
@@ -233,13 +235,11 @@ html{
         <div id="selection-emoji" class="empty"></div>
     </div>
 </section>
-
 <script>
 
 const copyLink = async () => {
     try {
-        let href = location.hostname+(location.port ? ':'+location.port: '');
-        link = "https://"+href+"/index.html?rid="+rid+"&room="+encodeURIComponent(room);
+        link = location.origin+"/index.html?rid="+rid+"&room="+encodeURIComponent(room);
         await navigator.clipboard.writeText(link);
         console.log('Content copied to clipboard');
     } catch (err) {
@@ -248,8 +248,7 @@ const copyLink = async () => {
 }
 
 const rename = async () => {
-    let href = location.hostname+(location.port ? ':'+location.port: '');
-    window.location = "https://"+href+"/index.html?rid="+rid+"&room="+room;
+    window.location = location.origin+"/index.html?rid="+rid+"&room="+room;
 }
 
 const share = () => {
