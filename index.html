@@ -115,7 +115,7 @@ new Vue({
     mounted() {},
     created() {
         let urlParams = new URLSearchParams(window.location.search);
-        this.rid = urlParams.get('rid') ?? (Math.random() + 1).toString(36).toUpperCase().substring(7);
+        this.rid = urlParams.get('rid') ?? (Math.random() + 1).toString(36).toUpperCase().substring(6);
         this.room = urlParams.get('room');
         this.name = urlParams.get('name');
     },
