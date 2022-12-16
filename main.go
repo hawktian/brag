@@ -1,29 +1,27 @@
 package main
 
 import (
-	"flag"
 	"log"
 	"net/http"
 )
 
-var addr = flag.String("addr", ":8081", "")
-
 func main() {
-	flag.Parse()
+	conf, err := readConf("conf.yaml")
+	if err != nil {
+		log.Fatal(err)
+	}
 	logInit()
 	hub := newHub()
 	go hub.run()
-
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(hub, w, r)
 	})
 	http.HandleFunc("/", index)
 	http.HandleFunc("/chat.html", chat)
 	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets"))))
-	err := http.ListenAndServe(*addr, nil)
-	if err != nil {
-		log.Fatal("ListenAndServe: ", err)
-	}
+	addr := conf.Server.Host + ":" + conf.Server.Port
+	log.Println("Server started on " + addr)
+	http.ListenAndServe(addr, nil)
 }
 
 func index(w http.ResponseWriter, r *http.Request) {

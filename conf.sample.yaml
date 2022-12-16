@@ -3,3 +3,6 @@ rabbitmq:
     port: 
     username: 
     password: 
+server:
+    host: 
+    port: 
