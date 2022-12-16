@@ -13,7 +13,6 @@ server {
     server_name www.brag.pub brag.pub;
     index index.html;
     root /web/brag/;
-    ssl on;
     ssl_certificate /etc/nginx/ssl/brag/brag.pub_bundle.crt;
     ssl_certificate_key /etc/nginx/ssl/brag/brag.pub.key;
     ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:HIGH:!aNULL:!MD5:!RC4:!DHE; 

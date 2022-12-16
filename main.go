@@ -19,9 +19,14 @@ func main() {
 	http.HandleFunc("/", index)
 	http.HandleFunc("/chat.html", chat)
 	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets"))))
+
 	addr := conf.Server.Host + ":" + conf.Server.Port
+	if conf.Ssl.Status == "ON" {
+		http.ListenAndServeTLS(addr, conf.Ssl.Crt, conf.Ssl.Key, nil)
+	} else {
+		http.ListenAndServe(addr, nil)
+	}
 	log.Println("Server started on " + addr)
-	http.ListenAndServe(addr, nil)
 }
 
 func index(w http.ResponseWriter, r *http.Request) {

@@ -5,4 +5,12 @@ rabbitmq:
     password: 
 server:
     host: 
-    port: 
+    #default value 80,if ssl status is ON,port should be 443
+    port: 80
+ssl:
+    #status : ON | OFF
+    status: ""
+    #/path/to/Certificate-crt
+    crt: ""
+    #/path/to/Certificate-key
+    key: ""
