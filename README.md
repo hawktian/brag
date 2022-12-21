@@ -3,6 +3,8 @@ browser based anonymous chat room.
 
 # Deploy
 
+## Backend
+
 git clone https://github.com/Tonvin/brag.git
 
 cd brag
@@ -13,7 +15,9 @@ go mod tidy
 
 go run *.go
 
-ip:8080
+## Frontend
+
+yarn run build
 
 # Log
 /tmp/brag.log
