@@ -41,4 +41,6 @@ dist-ssr
 *.sw?
 public
 
+brag
 /tmp
+/runner.conf

@@ -14,6 +14,15 @@ type Conf struct {
 		Username string `yaml:"username"`
 		Password string `yaml:"password"`
 	}
+	Server struct {
+		Host string `yaml:"host"`
+		Port string `yaml:"port"`
+	}
+	Ssl struct {
+		Status string `yaml:"status"`
+		Crt   string `yaml:"crt"`
+		Key    string `yaml:"key"`
+	}
 }
 
 func readConf(filename string) (*Conf, error) {
