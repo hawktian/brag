@@ -1,5 +1,4 @@
 import { createApp } from 'vue'
-import './style.css'
 import Gate from './Gate.vue'
 import 'vuetify/styles'
 import { createVuetify } from 'vuetify'

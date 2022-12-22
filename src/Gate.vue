@@ -30,16 +30,13 @@ export default{
 </script>
 
 <template>
-
 <div id=header>
-    <span class=logo>谝&nbsp;聊</span>
+    <h1 class=logo>谝&nbsp;聊</h1>
 </div>
-
-<v-container>
-<v-form id="profile">
+<v-container id="profile">
+<v-form id="form">
   <v-row>
     <v-col
-      cols="12"
       md="20"
     >
       <v-text-field
@@ -52,7 +49,6 @@ export default{
 
   <v-row>
     <v-col
-      cols="12"
       md="20"
     >
       <v-text-field
@@ -66,7 +62,7 @@ export default{
   </v-row>
 
   <v-row>
-    <v-col cols="12" md="20" >
+    <v-col md="20" >
           <v-btn color="primary" elevation="4" @click="checkin">开始聊天</v-btn>
     </v-col>
   </v-row>
@@ -74,18 +70,8 @@ export default{
 </v-container>
 </template>
 
-<style scoped>
-#brag {
-    width:390px;
-    margin:auto;
-}
-#form {display:flex;flex-direction:row;align-items:center;}
-#form #name{width:80px;}
-#form input {height:35px;font-size:1rem;margin-right:0px;}
-#header{margin:.5em 0;text-align:center;}
+<style>
+#header{margin:.5em 0;text-align:center;padding:.5em 0;}
 #header .logo{font-size:1rem;}
-#profile{
-    width:390px;
-    height:300px;
-}
+#profile{width:390px;}
 </style>
