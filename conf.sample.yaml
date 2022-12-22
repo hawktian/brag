@@ -10,7 +10,7 @@ server:
 ssl:
     #status : ON | OFF
     status: ""
-    #/path/to/Certificate-crt
+    #/path/to/ss/Certificate-crt
     crt: ""
-    #/path/to/Certificate-key
+    #/path/to/ssl/Certificate-key
     key: ""
