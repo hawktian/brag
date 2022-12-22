@@ -1,9 +1,9 @@
-# Intro
+## Intro
 browser based anonymous chat room.
 
-# Deploy
+## Deploy
 
-## Backend
+### Backend
 
 git clone https://github.com/Tonvin/brag.git
 
@@ -19,12 +19,15 @@ go run *.go
 
 yarn run build
 
-# Log
+## Log
 /tmp/brag.log
 
-# Demo Site
+## Demo Site
 
 https://brag.pub
 
-# Nginx Proxy Setting
+## Nginx
 see file nginx
+
+## License
+This project is licensed under the [The MIT License](https://opensource.org/licenses/MIT).
