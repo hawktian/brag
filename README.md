@@ -17,7 +17,9 @@ go run *.go
 
 ## Frontend
 
-yarn run build
+apt install node
+apt install npm
+npm run build
 
 ## Log
 /tmp/brag.log
@@ -26,8 +28,12 @@ yarn run build
 
 https://brag.pub
 
+## Live Reload for developing
+go install github.com/cosmtrek/air@latest
+./bin/air
+
 ## Nginx
-see file nginx
+see fale nginx
 
 ## License
 This project is licensed under the [The MIT License](https://opensource.org/licenses/MIT).
