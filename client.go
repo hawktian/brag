@@ -7,9 +7,10 @@ import (
 	"log"
 	"net/http"
 	"time"
-
+  "context"
 	"github.com/gorilla/websocket"
-	"github.com/streadway/amqp"
+
+  amqp "github.com/rabbitmq/amqp091-go"
 )
 
 const (
@@ -38,6 +39,11 @@ type Talk struct {
 	Room    string
 	Rid     string
 	Time    string
+}
+
+type Room struct {
+	Name    string
+	Id      string
 }
 
 var upgrader = websocket.Upgrader{
@@ -69,11 +75,11 @@ type Client struct {
 
 func failOnError(err error, msg string) {
 	if err != nil {
-		log.Fatalf("%s: %s", msg, err)
-	}
+    log.Panicf("%s: %s", msg, err)
+  }
 }
 
-func (c *Client) readPump() {
+func (c *Client) readPump(room Room) {
 	defer func() {
 		c.hub.unregister <- c
 		c.conn.Close()
@@ -82,8 +88,9 @@ func (c *Client) readPump() {
 	c.conn.SetReadDeadline(time.Now().Add(pongWait))
 	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 
-	conf, err := readConf("conf.yaml")
+	conf, err := readConf("conf.yam")
 	if err != nil {
+		log.Fatal("read conf failure")
 		log.Fatal(err)
 	}
 
@@ -96,10 +103,24 @@ func (c *Client) readPump() {
 	conn, err := amqp.Dial(dial)
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
+	log.Printf("Connect to Rabbitmq success")
 
 	ch, err := conn.Channel()
 	failOnError(err, "Failed to open a channel")
 	defer ch.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	q, err := ch.QueueDeclare(
+		room.Id,  // name
+		false, // durable
+		false, // delete when unused
+		false, // exclusive
+		false, // no-wait
+		nil,   // arguments
+	)
+	failOnError(err, "Failed to declare a queue")
 
 	for {
 		_, message, err := c.conn.ReadMessage()
@@ -113,8 +134,6 @@ func (c *Client) readPump() {
 		var talk Talk
 		json.Unmarshal(message, &talk)
 		//get message room name
-		room := talk.Room
-		//rid := talk.Rid
 
 		//add time to message
 		loc, _ := time.LoadLocation("Asia/Shanghai")
@@ -128,26 +147,18 @@ func (c *Client) readPump() {
 		msg.Write(message)
 		log.Print(msg.String())
 
-		q, err := ch.QueueDeclare(
-			room,  // name
-			false, // durable
-			false, // delete when unused
-			false, // exclusive
-			false, // no-wait
-			nil,   // arguments
-		)
-		failOnError(err, "Failed to declare a queue")
-
-		err = ch.Publish(
+		err = ch.PublishWithContext(ctx,
 			"",     // exchange
 			q.Name, // routing key
 			false,  // mandatory
 			false,  // immediate
-			amqp.Publishing{
+			amqp.Publishing {
 				ContentType: "text/plain",
-				Body:        msg.Bytes(),
+				Body:        []byte(msg.Bytes()),
 			})
 		failOnError(err, "Failed to publish a message")
+		log.Printf(" [x] Sent %s\n", msg.String())
+
 
 		c.hub.broadcast <- bytes.TrimSpace(bytes.Replace(msg.Bytes(), newline, space, -1))
 	}
@@ -209,20 +220,17 @@ func (c *Client) writePump() {
 
 // serveWs handles websocket requests from the peer.
 func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
-	room := r.URL.Query().Get("room")
-	rid := r.URL.Query().Get("rid")
-	log.Printf("room: %s", room)
-	log.Printf("rid: %s", rid)
+	room := Room{Name: r.URL.Query().Get("room"), Id: r.URL.Query().Get("rid")}
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	client := &Client{rid: rid, hub: hub, conn: conn, send: make(chan []byte, 256)}
+	client := &Client{rid: room.Id, hub: hub, conn: conn, send: make(chan []byte, 256)}
 	client.hub.register <- client
 
 	// Allow collection of memory referenced by the caller by doing all work in
 	// new goroutines.
 	go client.writePump()
-	go client.readPump()
+	go client.readPump(room)
 }
