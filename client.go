@@ -88,7 +88,7 @@ func (c *Client) readPump(room Room) {
 	c.conn.SetReadDeadline(time.Now().Add(pongWait))
 	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 
-	conf, err := readConf("conf.yam")
+	conf, err := readConf("conf.yaml")
 	if err != nil {
 		log.Fatal("read conf failure")
 		log.Fatal(err)
