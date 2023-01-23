@@ -148,7 +148,7 @@ func (c *Client) readPump(room Room) {
 		log.Print(msg.String())
 
 		err = ch.PublishWithContext(ctx,
-			"",     // exchange
+			"amq.direct",     // exchange
 			q.Name, // routing key
 			false,  // mandatory
 			false,  // immediate
